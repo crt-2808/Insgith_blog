@@ -1,0 +1,80 @@
+{% from "bootstrap5/form.html" import render_form %} 
+{% block content %} 
+{% include "header.html" %}
+
+<!-- Page Header -->
+<header style="background-image: url('../static/assets/img/edit-bg.jpg')" class="masthead">
+  <div class="container position-relative px-4 px-lg-5">
+    <div class="row gx-4 gx-lg-5 justify-content-center">
+      <div class="col-md-10 col-lg-8 col-xl-7">
+        <div class="page-heading">
+          {% if is_edit %}
+          <h1>Edit Post</h1>
+          {% else %}
+          <h1>New Post</h1>
+          {% endif %}
+          <span class="subheading">You're going to make a great blog post!</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="mb-4">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-md-10 mx-auto">
+        <!-- Switch para seleccionar Post o Video -->
+        <div class="form-check form-switch mb-3">
+          <input class="form-check-input" type="checkbox" id="postTypeSwitch" />
+          <label class="form-check-label" for="postTypeSwitch">¿Es un video?</label>
+        </div>
+
+        <!-- Campo para CKEditor (Post) -->
+        <div id="postContent">
+          {{ ckeditor.load() }} {{ ckeditor.config(name='body') }}
+        </div>
+
+        <!-- Campo oculto para post_topic -->
+        <input type="hidden" id="postTopicField" name="post_topic" value="Opinion">
+
+        <!-- Renderización del formulario -->
+        {{ render_form(form, novalidate=True, button_map={"submit": "primary"}) }}
+      </div>
+    </div>
+  </div>
+</main>
+
+{% include "footer.html" %} 
+{% endblock %}
+
+<script>
+  document.querySelector('form').addEventListener('submit', function() {
+    console.log("Datos del formulario:", new FormData(this).get('post_topic'));
+  });
+
+  document.getElementById('postTypeSwitch').addEventListener('change', function () {
+    const isVideo = this.checked;
+    const postContent = document.getElementById('postContent');
+    const videoContent = document.getElementById('videoContent');
+    const postTopicField = document.getElementById('postTopicField');
+
+    if (isVideo) {
+      // Destruye CKEditor para ocultarlo
+      for (var instance in CKEDITOR.instances) {
+        CKEDITOR.instances[instance].destroy(true);
+      }
+      postContent.style.display = 'none';
+      videoContent.style.display = 'block';
+      postTopicField.value = "Video";  // Actualiza el campo oculto a 'Video'
+      console.log("Este es el topic que tiene: " + postTopicField.value);
+    } else {
+      // Vuelve a inicializar CKEditor
+      CKEDITOR.replace('body');
+      postContent.style.display = 'block';
+      videoContent.style.display = 'none';
+      postTopicField.value = "Opinion";  // Actualiza el campo oculto a 'Opinion'
+      console.log("Este es el topic que tiene: " + postTopicField.value);
+    }
+  });
+</script>
