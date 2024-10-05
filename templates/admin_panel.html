@@ -1,0 +1,123 @@
+{% include "header.html" %}
+<!-- Page Header-->
+<header
+  class="masthead"
+  style="background-image: url('../static/assets/img/contact-bg.jpg')"
+>
+  <div class="container position-relative px-4 px-lg-5">
+    <div class="row gx-4 gx-lg-5 justify-content-center">
+      <div class="col-md-10 col-lg-8 col-xl-7">
+        <div class="page-heading">
+
+          <h1>Admin Panel</h1>
+          <span class="subheading"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+{% block content %}
+<h1>Admin Panel</h1>
+
+<h2>Top 5 Publicaciones</h2>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Título</th>
+            <th>Visitas Registradas</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for post in top_posts %}
+        <tr>
+            <td>
+                <a href="http://127.0.0.1:5002/post/{{ post.id }}">{{ post.title }}</a>
+            </td>
+            <td>{{ post.visitasRegistradas }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h2>Distribución de Tipos de Post</h2>
+<canvas id="postTopicChart"></canvas>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx1 = document.getElementById('postTopicChart').getContext('2d');
+    const postTopicChart = new Chart(ctx1, {
+        type: 'pie',
+        data: {
+            labels: {{ topic_labels|tojson }},
+            datasets: [{
+                label: 'Cantidad de Noticias por Tipo',
+                data: {{ topic_values|tojson }},
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(255, 206, 86, 0.2)',
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(153, 102, 255, 0.2)',
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                title: {
+                    display: true,
+                    text: 'Distribución de Tipos de Post'
+                }
+            }
+        }
+    });
+</script>
+
+<h2>Publicaciones por Autor</h2>
+<canvas id="authorChart"></canvas>
+<script>
+    const ctx2 = document.getElementById('authorChart').getContext('2d');
+    const authorChart = new Chart(ctx2, {
+        type: 'bar',
+        data: {
+            labels: {{ author_labels|tojson }},
+            datasets: [{
+                label: 'Cantidad de Publicaciones',
+                data: {{ author_values|tojson }},
+                backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                title: {
+                    display: true,
+                    text: 'Publicaciones por Autor'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

@@ -18,6 +18,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from werkzeug.utils import secure_filename
 import os
 import random
+from collections import Counter
 
 # Configuración de las credenciales del servidor SMTP
 SMTP_SERVER = "smtp.gmail.com"  # Cambia esto al servidor SMTP que estés usando
@@ -203,7 +204,7 @@ class CreatePostForm(FlaskForm):
     author = StringField("Nombre del autor", validators=[DataRequired()])
     img_url = StringField("URL de la Imagen", validators=[DataRequired(), URL()])
     post_topic = StringField("Post Topic")
-    video = FileField("Selecciona un video", validators=[DataRequired()])  # Agrega el campo para el video
+    video = FileField("Selecciona un video")  # Agrega el campo para el video
     body = CKEditorField("Contenido", validators=[DataRequired()])
     submit = SubmitField("Publicar")
 
@@ -376,6 +377,35 @@ def contact():
         msg_sent = True
 
     return render_template("contact.html", msg_sent=msg_sent)
+
+@app.route('/adminPanel')
+def admin_panel():
+    # Consulta para obtener las 5 publicaciones con más visitas
+    top_posts = BlogPost.query.order_by(BlogPost.visitasRegistradas.desc()).limit(5).all()
+    
+    # Contar los diferentes tipos de post_topic
+    post_topics = db.session.query(BlogPost.post_topic).all()
+    topic_counts = Counter(topic.post_topic for topic in post_topics)
+
+    # Contar las publicaciones por autor
+    authors = db.session.query(BlogPost.author).all()
+    author_counts = Counter(author.author for author in authors)
+
+    # Dividir los datos para la gráfica de tipos de post
+    topic_labels = list(topic_counts.keys())
+    topic_values = list(topic_counts.values())
+    
+    # Dividir los datos para la gráfica de autores
+    author_labels = list(author_counts.keys())
+    author_values = list(author_counts.values())
+
+    return render_template(
+        'admin_panel.html', 
+        top_posts=top_posts, 
+        topic_labels=topic_labels, 
+        topic_values=topic_values,
+        author_labels=author_labels,
+        author_values=author_values)
 
 
 
